@@ -1,15 +1,17 @@
 using System.Diagnostics;
 using System.Text.Json;
-using Logger;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+namespace AuditLogging;
 
 public sealed class AuditMiddleware : IMiddleware
 {
-    private readonly DemoDb _db;
     private readonly ILogger<AuditMiddleware> _log;
 
-    public AuditMiddleware(DemoDb db, ILogger<AuditMiddleware> logger)
+    public AuditMiddleware(ILogger<AuditMiddleware> logger)
     {
-        _db = db;
         _log = logger;
     }
 
@@ -82,11 +84,10 @@ public sealed class AuditMiddleware : IMiddleware
             _ = Task.Run(async () =>
             {
                 using var scope = sp.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<DemoDb>();
+                var db = scope.ServiceProvider.GetRequiredService<IAuditDbContext>();
                 db.HttpAudits.Add(audit);
                 await db.SaveChangesAsync();
             });
-            //Add to my ticketing errors
         }
     }
 

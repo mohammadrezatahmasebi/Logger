@@ -1,3 +1,5 @@
+namespace AuditLogging;
+
 public class HttpAudit
 {
     public long Id { get; set; }

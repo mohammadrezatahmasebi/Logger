@@ -1,5 +1,6 @@
 using System.Diagnostics;
-using Logger;
+
+namespace AuditLogging;
 
 public sealed class AuditHttpHandler : DelegatingHandler
 {

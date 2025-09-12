@@ -4,6 +4,7 @@ using OpenTelemetry.Trace;
 using OpenTelemetry.Resources;
 using System.Diagnostics;
 using Serilog.Enrichers.Span;
+using AuditLogging;
 
 // ---------- Serilog ----------
 Log.Logger = new LoggerConfiguration()
@@ -24,11 +25,10 @@ const string serviceName = "orchestration-api";
 var activitySource = new ActivitySource(serviceName);
 
 builder.Services.AddSingleton(activitySource);
-builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddDbContext<DemoDb>(opt =>
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("db")));
-        //.AddInterceptors(new AuditEfInterceptor()));
+builder.Services.AddDbContext<DemoDb>((sp, opt) =>
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("db"))
+        .AddInterceptors(sp.GetRequiredService<AuditEfInterceptor>()));
 
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
@@ -38,15 +38,13 @@ builder.Services.AddOpenTelemetry()
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation(o => o.SetDbStatementForText = true));
 
-builder.Services.AddScoped<CorrelationMiddleware>();
-builder.Services.AddScoped<AuditMiddleware>();
-builder.Services.AddScoped<AuditHttpHandler>();
-builder.Services.AddScoped<CorrelationDelegatingHandler>();
+builder.Services.AddAuditLogging(options =>
+{
+    options.LogEntityFrameworkCore = true;
+});
 
 // single typed HttpClient
-builder.Services.AddHttpClient("downstream")
-    .AddHttpMessageHandler<CorrelationDelegatingHandler>()
-    .AddHttpMessageHandler<AuditHttpHandler>();
+builder.Services.AddHttpClient("downstream");
 
 builder.Services.AddControllers();
 

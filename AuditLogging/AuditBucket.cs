@@ -1,4 +1,4 @@
-namespace Logger;
+namespace AuditLogging;
 
 
 public sealed class AuditBucket

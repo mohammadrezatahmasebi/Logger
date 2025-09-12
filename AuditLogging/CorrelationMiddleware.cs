@@ -1,4 +1,8 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+
+namespace AuditLogging;
 
 public sealed class CorrelationMiddleware : IMiddleware
 {
@@ -15,8 +19,6 @@ public sealed class CorrelationMiddleware : IMiddleware
         using (_log.BeginScope(new Dictionary<string, object>
                    { ["Correlation-ID"] = cid.ToString() }))
         {
-            using var activity = new ActivitySource("orchestration-api")
-                .StartActivity("HTTP " + ctx.Request.Method);
             await next(ctx);
         }
     }
