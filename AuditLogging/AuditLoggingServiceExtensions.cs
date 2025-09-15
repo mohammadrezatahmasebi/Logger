@@ -32,4 +32,10 @@ public static class AuditLoggingServiceExtensions
         services.AddScoped<IAuditDbContext, MongoAuditDbContext>();
         return services;
     }
+
+    public static IServiceCollection AddAuditLogReader(this IServiceCollection services)
+    {
+        services.AddScoped<IAuditLogReader, MongoAuditLogReader>();
+        return services;
+    }
 }

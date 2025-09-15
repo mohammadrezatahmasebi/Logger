@@ -28,6 +28,7 @@ builder.Services.AddSingleton(activitySource);
 
 var mongoDbSettings = builder.Configuration.GetSection("MongoDbSettings").Get<MongoDbSettings>();
 builder.Services.AddMongoDbPersistence(mongoDbSettings.ConnectionString, mongoDbSettings.DatabaseName);
+builder.Services.AddAuditLogReader();
 
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
