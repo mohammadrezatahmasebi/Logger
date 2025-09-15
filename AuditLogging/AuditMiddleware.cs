@@ -85,8 +85,7 @@ public sealed class AuditMiddleware : IMiddleware
             {
                 using var scope = sp.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<IAuditDbContext>();
-                db.HttpAudits.Add(audit);
-                await db.SaveChangesAsync();
+                await db.AddAuditAsync(audit);
             });
         }
     }

@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 using OpenTelemetry.Trace;
+using Logger;
 using OpenTelemetry.Resources;
 using System.Diagnostics;
 using Serilog.Enrichers.Span;
@@ -26,9 +26,8 @@ var activitySource = new ActivitySource(serviceName);
 
 builder.Services.AddSingleton(activitySource);
 
-builder.Services.AddDbContext<DemoDb>((sp, opt) =>
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("db"))
-        .AddInterceptors(sp.GetRequiredService<AuditEfInterceptor>()));
+var mongoDbSettings = builder.Configuration.GetSection("MongoDbSettings").Get<MongoDbSettings>();
+builder.Services.AddMongoDbPersistence(mongoDbSettings.ConnectionString, mongoDbSettings.DatabaseName);
 
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
@@ -40,7 +39,6 @@ builder.Services.AddOpenTelemetry()
 
 builder.Services.AddAuditLogging(options =>
 {
-    options.LogEntityFrameworkCore = true;
 });
 
 // single typed HttpClient
