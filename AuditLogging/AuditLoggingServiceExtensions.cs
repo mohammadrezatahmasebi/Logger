@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 
 namespace AuditLogging;
 
@@ -21,11 +22,20 @@ public static class AuditLoggingServiceExtensions
 
         services.AddSingleton<IConfigureOptions<HttpClientFactoryOptions>, HttpClientAuditLoggingConfiguration>();
 
-        if (options.LogEntityFrameworkCore)
-        {
-            services.AddSingleton<AuditEfInterceptor>();
-        }
+        return services;
+    }
 
+    public static IServiceCollection AddMongoDbPersistence(this IServiceCollection services, string connectionString, string databaseName)
+    {
+        services.AddSingleton<IMongoClient>(new MongoClient(connectionString));
+        services.AddSingleton<IMongoDatabase>(sp => sp.GetRequiredService<IMongoClient>().GetDatabase(databaseName));
+        services.AddScoped<IAuditDbContext, MongoAuditDbContext>();
+        return services;
+    }
+
+    public static IServiceCollection AddAuditLogReader(this IServiceCollection services)
+    {
+        services.AddScoped<IAuditLogReader, MongoAuditLogReader>();
         return services;
     }
 }
